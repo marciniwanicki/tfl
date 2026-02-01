@@ -12,6 +12,7 @@ import (
 )
 
 var limit int
+var match string
 
 var departuresCmd = &cobra.Command{
 	Use:   "departures <station> [line]",
@@ -22,7 +23,8 @@ Examples:
   tfl departures "liverpool street"
   tfl departures "liverpool street" elizabeth
   tfl departures paddington central
-  tfl departures paddington -n 5`,
+  tfl departures paddington -n 5
+  tfl departures liverpool -m "elizabeth heathrow terminal 5"`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		stationQuery := args[0]
@@ -45,7 +47,7 @@ Examples:
 		stop := selectBestMatch(stops, stationQuery)
 
 		var arrivals []tfl.Arrival
-		if lineFilter != "" {
+		if lineFilter != "" && match == "" {
 			arrivals, err = client.GetArrivals(stop.ID, lineFilter)
 		} else {
 			arrivals, err = client.GetAllArrivalsAtStop(stop.ID)
@@ -54,6 +56,14 @@ Examples:
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error fetching arrivals: %v\n", err)
 			os.Exit(1)
+		}
+
+		if match != "" {
+			arrivals = filterByMatch(arrivals, match)
+		}
+
+		if lineFilter != "" && match != "" {
+			arrivals = filterByLine(arrivals, lineFilter)
 		}
 
 		if limit > 0 && len(arrivals) > limit {
@@ -79,6 +89,35 @@ var searchCmd = &cobra.Command{
 	},
 }
 
+func filterByMatch(arrivals []tfl.Arrival, match string) []tfl.Arrival {
+	words := strings.Fields(strings.ToLower(match))
+	var filtered []tfl.Arrival
+	for _, a := range arrivals {
+		searchText := strings.ToLower(a.LineName + " " + a.DestinationName)
+		allMatch := true
+		for _, word := range words {
+			if !strings.Contains(searchText, word) {
+				allMatch = false
+				break
+			}
+		}
+		if allMatch {
+			filtered = append(filtered, a)
+		}
+	}
+	return filtered
+}
+
+func filterByLine(arrivals []tfl.Arrival, line string) []tfl.Arrival {
+	var filtered []tfl.Arrival
+	for _, a := range arrivals {
+		if strings.ToLower(a.LineName) == line {
+			filtered = append(filtered, a)
+		}
+	}
+	return filtered
+}
+
 func selectBestMatch(stops []tfl.StopPoint, query string) tfl.StopPoint {
 	query = strings.ToLower(query)
 
@@ -99,6 +138,7 @@ func selectBestMatch(stops []tfl.StopPoint, query string) tfl.StopPoint {
 
 func init() {
 	departuresCmd.Flags().IntVarP(&limit, "limit", "n", 0, "Maximum number of departures to show")
+	departuresCmd.Flags().StringVarP(&match, "match", "m", "", "Fuzzy filter by line name and/or destination")
 	rootCmd.AddCommand(departuresCmd)
 	rootCmd.AddCommand(searchCmd)
 }
