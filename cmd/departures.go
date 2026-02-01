@@ -11,6 +11,8 @@ import (
 	"tfl/internal/tfl"
 )
 
+var limit int
+
 var departuresCmd = &cobra.Command{
 	Use:   "departures <station> [line]",
 	Short: "Show departures from a station",
@@ -19,7 +21,8 @@ var departuresCmd = &cobra.Command{
 Examples:
   tfl departures "liverpool street"
   tfl departures "liverpool street" elizabeth
-  tfl departures paddington central`,
+  tfl departures paddington central
+  tfl departures paddington -n 5`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		stationQuery := args[0]
@@ -51,6 +54,10 @@ Examples:
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error fetching arrivals: %v\n", err)
 			os.Exit(1)
+		}
+
+		if limit > 0 && len(arrivals) > limit {
+			arrivals = arrivals[:limit]
 		}
 
 		display.PrintArrivals(arrivals, stop.Name)
@@ -91,6 +98,7 @@ func selectBestMatch(stops []tfl.StopPoint, query string) tfl.StopPoint {
 }
 
 func init() {
+	departuresCmd.Flags().IntVarP(&limit, "limit", "n", 0, "Maximum number of departures to show")
 	rootCmd.AddCommand(departuresCmd)
 	rootCmd.AddCommand(searchCmd)
 }

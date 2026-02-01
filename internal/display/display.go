@@ -143,6 +143,7 @@ func PrintArrivals(arrivals []tfl.Arrival, stationName string) {
 	for _, arr := range arrivals {
 		lineCol := getLineColor(arr.LineID)
 		mins := arr.TimeToStation / 60
+		departureTime := arr.ExpectedArrival.Local().Format("15:04")
 
 		var timeStr string
 		switch mins {
@@ -159,8 +160,9 @@ func PrintArrivals(arrivals []tfl.Arrival, stationName string) {
 			platform = "-"
 		}
 
-		fmt.Printf("%s %-12s %s  %-6s  %s%-30s%s  %s%s%s\n",
+		fmt.Printf("%s %-12s %s  %s%s%s  %-8s  %s%-28s%s  %s%s%s\n",
 			lineCol, " "+arr.LineName+" ", reset,
+			cyan, departureTime, reset,
 			timeStr,
 			bold, arr.DestinationName, reset,
 			gray, platform, reset)
