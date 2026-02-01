@@ -145,11 +145,12 @@ func PrintArrivals(arrivals []tfl.Arrival, stationName string) {
 		mins := arr.TimeToStation / 60
 
 		var timeStr string
-		if mins == 0 {
+		switch mins {
+		case 0:
 			timeStr = fmt.Sprintf("%sDue%s", green+bold, reset)
-		} else if mins == 1 {
+		case 1:
 			timeStr = fmt.Sprintf("%s1 min%s", green, reset)
-		} else {
+		default:
 			timeStr = fmt.Sprintf("%d mins", mins)
 		}
 

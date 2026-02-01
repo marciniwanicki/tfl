@@ -31,4 +31,5 @@ func Execute() error {
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&appKey, "key", "", "TfL API key (or set TFL_APP_KEY env var)")
+	rootCmd.SetHelpCommand(&cobra.Command{Hidden: true})
 }
