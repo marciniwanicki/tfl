@@ -19,17 +19,25 @@ var match string
 var departureTime string
 
 var departuresCmd = &cobra.Command{
-	Use:   "departures <station> [line]",
+	Use:   "departures <station-name> [line]",
 	Short: "Show departures from a station",
 	Long: `Show upcoming departures from a station.
 
+Station names are matched case-insensitively and support partial matching.
+Use quotes for station names containing spaces.
+
+Arguments:
+  <station-name>  Station name or partial match (e.g., "Liverpool Street", "paddington")
+  [line]          Optional line filter (e.g., "central", "elizabeth")
+
 Examples:
-  tfl departures "liverpool street"
-  tfl departures "liverpool street" elizabeth
-  tfl departures paddington central
-  tfl departures paddington -n 5
-  tfl departures liverpool -m "elizabeth heathrow terminal 5"
-  tfl departures paddington --time 14:30`,
+  tfl departures "Liverpool Street"
+  tfl departures "Liverpool Street" Elizabeth
+  tfl departures Paddington Central
+  tfl departures Paddington -n 5
+  tfl departures Paddington -m "Heathrow Terminal 5"
+  tfl departures Paddington --time 14:30
+  tfl departures Paddington --format json`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		stationQuery := args[0]
@@ -113,14 +121,26 @@ Examples:
 			arrivals = arrivals[:limit]
 		}
 
-		display.PrintArrivals(arrivals, stop.Name)
+		if IsJSON() {
+			display.PrintArrivalsJSON(arrivals, stop.Name)
+		} else {
+			display.PrintArrivals(arrivals, stop.Name)
+		}
 	},
 }
 
 var searchCmd = &cobra.Command{
-	Use:   "search <query>",
+	Use:   "search <station-name>",
 	Short: "Search for stations",
-	Long:  `Search for stations by name.`,
+	Long: `Search for stations by name.
+
+Station names are matched case-insensitively and support partial matching.
+
+Examples:
+  tfl search "King's Cross"
+  tfl search Paddington
+  tfl search Victoria
+  tfl search Liverpool --format json`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		stops, err := client.SearchStopPoints(args[0])
@@ -128,7 +148,11 @@ var searchCmd = &cobra.Command{
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
 		}
-		display.PrintStopPoints(stops)
+		if IsJSON() {
+			display.PrintStopPointsJSON(stops)
+		} else {
+			display.PrintStopPoints(stops)
+		}
 	},
 }
 
