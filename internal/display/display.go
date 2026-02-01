@@ -64,8 +64,9 @@ func PrintLineStatuses(statuses []tfl.LineStatus) {
 		status := line.LineStatuses[0]
 		statCol := statusColor(status.StatusSeverity)
 
-		fmt.Printf("%s %-18s %s %s%-20s%s\n",
-			lineCol, " "+line.Name+" ", reset,
+		lineName := formatLineName(line.Name)
+		fmt.Printf("%s%s%s %s%-20s%s\n",
+			lineCol, lineName, reset,
 			statCol, status.StatusSeverityDescription, reset)
 
 		if status.Reason != "" {
@@ -131,6 +132,20 @@ func PrintStopPoints(stops []tfl.StopPoint) {
 	}
 }
 
+const lineNameWidth = 14
+
+func formatLineName(name string) string {
+	if len(name) > lineNameWidth {
+		return " " + name[:lineNameWidth-2] + ".. "
+	}
+	// Pad to fixed width
+	padded := " " + name
+	for len(padded) < lineNameWidth+1 {
+		padded += " "
+	}
+	return padded + " "
+}
+
 func PrintArrivals(arrivals []tfl.Arrival, stationName string) {
 	fmt.Println()
 	if len(arrivals) == 0 {
@@ -168,8 +183,9 @@ func PrintArrivals(arrivals []tfl.Arrival, stationName string) {
 			platform = "-"
 		}
 
-		fmt.Printf("%s %-12s %s  %s%s%s  %-8s  %s%-28s%s  %s%s%s\n",
-			lineCol, " "+arr.LineName+" ", reset,
+		lineName := formatLineName(arr.LineName)
+		fmt.Printf("%s%s%s  %s%s%s  %-8s  %s%-28s%s  %s%s%s\n",
+			lineCol, lineName, reset,
 			cyan, departureTime, reset,
 			timeStr,
 			bold, arr.DestinationName, reset,
