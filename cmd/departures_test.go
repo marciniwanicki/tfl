@@ -9,10 +9,10 @@ import (
 
 func TestFilterByMatch(t *testing.T) {
 	arrivals := []tfl.Arrival{
-		{LineName: "Elizabeth", DestinationName: "Heathrow Terminal 5"},
-		{LineName: "Elizabeth", DestinationName: "Shenfield"},
-		{LineName: "Central", DestinationName: "Ealing Broadway"},
-		{LineName: "District", DestinationName: "Richmond"},
+		{LineName: "Elizabeth", DestinationName: "Heathrow Terminal 5", PlatformName: "Platform 1"},
+		{LineName: "Elizabeth", DestinationName: "Shenfield", PlatformName: "Platform 2"},
+		{LineName: "Central", DestinationName: "Ealing Broadway", PlatformName: "Westbound"},
+		{LineName: "District", DestinationName: "Richmond", PlatformName: "Platform 3"},
 	}
 
 	tests := []struct {
@@ -29,6 +29,8 @@ func TestFilterByMatch(t *testing.T) {
 		{"no match", "northern", 0},
 		{"all words must match", "elizabeth richmond", 0},
 		{"empty match returns all", "", 4},
+		{"matches platform", "westbound", 1},
+		{"matches line and platform", "elizabeth platform 1", 1},
 	}
 
 	for _, tt := range tests {
@@ -120,9 +122,9 @@ func TestFilterByTime(t *testing.T) {
 
 	arrivals := []tfl.Arrival{
 		{LineName: "Elizabeth", ExpectedArrival: baseTime.Add(-30 * time.Minute)}, // 13:30
-		{LineName: "Central", ExpectedArrival: baseTime},                           // 14:00
-		{LineName: "District", ExpectedArrival: baseTime.Add(30 * time.Minute)},    // 14:30
-		{LineName: "Northern", ExpectedArrival: baseTime.Add(60 * time.Minute)},    // 15:00
+		{LineName: "Central", ExpectedArrival: baseTime},                          // 14:00
+		{LineName: "District", ExpectedArrival: baseTime.Add(30 * time.Minute)},   // 14:30
+		{LineName: "Northern", ExpectedArrival: baseTime.Add(60 * time.Minute)},   // 15:00
 	}
 
 	tests := []struct {
@@ -157,9 +159,9 @@ func TestSelectBestMatch(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
-		query    string
-		wantID   string
+		name   string
+		query  string
+		wantID string
 	}{
 		{"exact match", "Liverpool", "2"},
 		{"exact match case insensitive", "liverpool", "2"},

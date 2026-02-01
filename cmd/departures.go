@@ -136,7 +136,7 @@ func filterByMatch(arrivals []tfl.Arrival, match string) []tfl.Arrival {
 	words := strings.Fields(strings.ToLower(match))
 	var filtered []tfl.Arrival
 	for _, a := range arrivals {
-		searchText := strings.ToLower(a.LineName + " " + a.DestinationName)
+		searchText := strings.ToLower(a.LineName + " " + a.DestinationName + " " + a.PlatformName)
 		allMatch := true
 		for _, word := range words {
 			if !strings.Contains(searchText, word) {
