@@ -19,32 +19,24 @@ var match string
 var departureTime string
 
 var departuresCmd = &cobra.Command{
-	Use:   "departures <station-name> [line]",
+	Use:   "departures <station-name>",
 	Short: "Show departures from a station",
 	Long: `Show upcoming departures from a station.
 
 Station names are matched case-insensitively and support partial matching.
-Use quotes for station names containing spaces.
-
-Arguments:
-  <station-name>  Station name or partial match (e.g., "Liverpool Street", "paddington")
-  [line]          Optional line filter (e.g., "central", "elizabeth")
+Use quotes for station names containing spaces. Use -m to filter by line or destination.
 
 Examples:
   tfl departures "Liverpool Street"
-  tfl departures "Liverpool Street" Elizabeth
-  tfl departures Paddington Central
+  tfl departures Paddington
   tfl departures Paddington -n 5
+  tfl departures Paddington -m Central
   tfl departures Paddington -m "Heathrow Terminal 5"
   tfl departures Paddington --time 14:30
   tfl departures Paddington --format json`,
-	Args: cobra.MinimumNArgs(1),
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		stationQuery := args[0]
-		var lineFilter string
-		if len(args) > 1 {
-			lineFilter = strings.ToLower(args[1])
-		}
 
 		stops, err := client.SearchStopPoints(stationQuery)
 		if err != nil {
@@ -75,7 +67,7 @@ Examples:
 		timetableFailed := false
 
 		if useTimetable {
-			arrivals, err = getArrivalsFromTimetable(stop.ID, lineFilter, minTime)
+			arrivals, err = getArrivalsFromTimetable(stop.ID, match, minTime)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error fetching timetable: %v\n", err)
 				os.Exit(1)
@@ -92,12 +84,7 @@ Examples:
 				fmt.Println("Note: Timetable unavailable for this line. Real-time data only covers ~30 minutes ahead.")
 			}
 
-			if lineFilter != "" && match == "" {
-				arrivals, err = client.GetArrivals(stop.ID, lineFilter)
-			} else {
-				arrivals, err = client.GetAllArrivalsAtStop(stop.ID)
-			}
-
+			arrivals, err = client.GetAllArrivalsAtStop(stop.ID)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error fetching arrivals: %v\n", err)
 				os.Exit(1)
@@ -111,10 +98,6 @@ Examples:
 
 		if match != "" {
 			arrivals = filterByMatch(arrivals, match)
-		}
-
-		if lineFilter != "" && match != "" {
-			arrivals = filterByLine(arrivals, lineFilter)
 		}
 
 		if limit > 0 && len(arrivals) > limit {
@@ -141,7 +124,7 @@ Examples:
   tfl search Paddington
   tfl search Victoria
   tfl search Liverpool --format json`,
-	Args:  cobra.ExactArgs(1),
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		stops, err := client.SearchStopPoints(args[0])
 		if err != nil {
@@ -169,16 +152,6 @@ func filterByMatch(arrivals []tfl.Arrival, match string) []tfl.Arrival {
 			}
 		}
 		if allMatch {
-			filtered = append(filtered, a)
-		}
-	}
-	return filtered
-}
-
-func filterByLine(arrivals []tfl.Arrival, line string) []tfl.Arrival {
-	var filtered []tfl.Arrival
-	for _, a := range arrivals {
-		if strings.ToLower(a.LineName) == line {
 			filtered = append(filtered, a)
 		}
 	}

@@ -19,17 +19,17 @@ type ArrivalJSON struct {
 }
 
 type DeparturesOutput struct {
-	Station   string        `json:"station"`
-	Arrivals  []ArrivalJSON `json:"arrivals"`
-	Count     int           `json:"count"`
+	Station  string        `json:"station"`
+	Arrivals []ArrivalJSON `json:"arrivals"`
+	Count    int           `json:"count"`
 }
 
 type LineStatusJSON struct {
-	Line        string `json:"line"`
-	LineID      string `json:"line_id"`
-	Status      string `json:"status"`
-	Severity    int    `json:"severity"`
-	Reason      string `json:"reason,omitempty"`
+	Line     string `json:"line"`
+	LineID   string `json:"line_id"`
+	Status   string `json:"status"`
+	Severity int    `json:"severity"`
+	Reason   string `json:"reason,omitempty"`
 }
 
 type StatusOutput struct {

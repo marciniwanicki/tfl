@@ -43,35 +43,6 @@ func TestFilterByMatch(t *testing.T) {
 	}
 }
 
-func TestFilterByLine(t *testing.T) {
-	arrivals := []tfl.Arrival{
-		{LineName: "Elizabeth", DestinationName: "Heathrow Terminal 5"},
-		{LineName: "Elizabeth", DestinationName: "Shenfield"},
-		{LineName: "Central", DestinationName: "Ealing Broadway"},
-		{LineName: "District", DestinationName: "Richmond"},
-	}
-
-	tests := []struct {
-		name     string
-		line     string
-		expected int
-	}{
-		{"matches elizabeth", "elizabeth", 2},
-		{"matches central", "central", 1},
-		{"no match", "northern", 0},
-		{"case sensitive input assumed lowercase", "Elizabeth", 0},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := filterByLine(arrivals, tt.line)
-			if len(result) != tt.expected {
-				t.Errorf("filterByLine(%q) = %d arrivals, want %d", tt.line, len(result), tt.expected)
-			}
-		})
-	}
-}
-
 func TestParseTimeToday(t *testing.T) {
 	tests := []struct {
 		name      string

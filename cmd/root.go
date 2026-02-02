@@ -26,7 +26,7 @@ Examples:
   tfl status                              Show all tube line statuses
   tfl disruptions                         Show current service disruptions
   tfl departures "Liverpool Street"       Show departures from a station
-  tfl departures Paddington Central -n 5  Filter by line, limit results
+  tfl departures Paddington -m Central    Filter by line or destination
   tfl search "King's Cross"               Search for stations`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if appKey == "" {
